@@ -44,6 +44,20 @@ class PaymentCardsController < ApplicationController
         end
     end
 
+    def validate_card
+        card = PaymentCard.find_by(
+          card_number: params[:card_number],
+          cardholder_name: params[:cardholder_name],
+          cvv: params[:cvv]
+        )
+    
+        if card
+          render json: { valid: true }, status: :ok
+        else
+          render json: { valid: false, error: "Tarjeta no válida" }, status: :unprocessable_entity
+        end
+    end
+
     private
 
     def payment_card_params
