@@ -48,7 +48,8 @@ class PaymentCardsController < ApplicationController
         card = PaymentCard.find_by(
           card_number: params[:card_number],
           cardholder_name: params[:cardholder_name],
-          cvv: params[:cvv]
+          cvv: params[:cvv],
+          expiration_date: params[:expiration_date]
         )
     
         if card
