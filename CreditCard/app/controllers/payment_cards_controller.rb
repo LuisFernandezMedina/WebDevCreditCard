@@ -67,7 +67,6 @@ class PaymentCardsController < ApplicationController
   
     begin
       # Cargar con Stripe
-
       token = OpenStruct.new(id: 'tok_visa')  # Token de prueba predefinido
 
   
