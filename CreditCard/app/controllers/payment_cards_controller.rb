@@ -67,7 +67,7 @@ class PaymentCardsController < ApplicationController
   
     begin
       # Cargar con Stripe
-      token = OpenStruct.new(id: 'tok_visa')  # Token de prueba predefinido
+      #token = OpenStruct.new(id: 'tok_visa')  # Token de prueba predefinido
 
   
       charge = Stripe::Charge.create({
