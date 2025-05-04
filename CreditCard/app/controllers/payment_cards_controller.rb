@@ -1,3 +1,6 @@
+require 'stripe'
+require 'ostruct'
+
 class PaymentCardsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy, :transfer]
 
@@ -52,50 +55,44 @@ class PaymentCardsController < ApplicationController
     cvv              = params[:cvv]
     expiration_date  = params[:expiration_date]
     amount           = params[:amount].to_f
-    direction        = params[:direction] # "in" o "out"
+    direction        = params[:direction]
   
-    if [card_number, cardholder_name, cvv, expiration_date, amount, direction].any?(&:blank?)
+    if [card_number, cardholder_name, cvv, expiration_date, amount].any?(&:blank?)
       return render json: { success: false, error: "Faltan parámetros" }, status: :bad_request
     end
   
-    card = PaymentCard.find_by(card_number: card_number)
-  
-    if card
-      unless card.cvv == cvv && card.expiration_date.to_s == expiration_date
-        return render json: { success: false, error: "Datos incorrectos" }, status: :unauthorized
-      end
-    else
-      # SOLO se crea si no existe
-      card = PaymentCard.new(
-        card_number: card_number,
-        cardholder_name: cardholder_name,
-        cvv: cvv,
-        expiration_date: expiration_date,
-        balance: 0.0
-      )
-  
-      unless card.save
-        return render json: { success: false, error: card.errors.full_messages }, status: :unprocessable_entity
-      end
+    if direction != "in"
+      return render json: { success: false, error: "Solo se permiten cargas con direction: 'in'" }, status: :bad_request
     end
   
     begin
-      if direction == "out"
-        card.charge(amount)
-      elsif direction == "in"
-        card.balance += amount
-        card.save!(validate: false)
+      # Cargar con Stripe
+      Stripe.api_key = 'sk_test_51RKGo4CvY5PtT5XCjsTOitD01INJnZGO93aLXoDgArDvQocoM0uuWSPSlMIIDS0Mzs7ppapXyU5IIBhkW2qf9QDs00sZKiU12P'
+  
+      token = OpenStruct.new(id: 'tok_visa')  # Token de prueba predefinido
 
-      else
-        return render json: { success: false, error: "Dirección inválida (usa 'in' o 'out')" }, status: :bad_request
-      end
   
-      render json: { success: true, new_balance: card.balance }, status: :ok
+      charge = Stripe::Charge.create({
+        amount: (amount * 100).to_i,
+        currency: 'usd',
+        source: token.id,
+        description: "Crédito para #{cardholder_name}"
+      })
   
+      # Buscar o crear PaymentCard (como monedero virtual)
+      card = PaymentCard.find_or_initialize_by(card_number: card_number)
+      card.cardholder_name = cardholder_name
+      card.cvv = cvv
+      card.expiration_date = expiration_date
+      render json: { success: true, charge_id: charge.id }, status: :ok
+  
+    rescue Stripe::CardError => e
+      render json: { success: false, error: e.message }, status: :payment_required
     rescue => e
       render json: { success: false, error: e.message }, status: :unprocessable_entity
     end
   end
+  
   
   
   private
