@@ -67,8 +67,8 @@ class PaymentCardsController < ApplicationController
   
     begin
       # Cargar con Stripe
-      Stripe.api_key = 'sk_test_51RKGo4CvY5PtT5XCjsTOitD01INJnZGO93aLXoDgArDvQocoM0uuWSPSlMIIDS0Mzs7ppapXyU5IIBhkW2qf9QDs00sZKiU12P'
-  
+      Stripe.api_key = ENV['STRIPE_SECRET_KEY']  # ✅ con variable de entorno
+
       token = OpenStruct.new(id: 'tok_visa')  # Token de prueba predefinido
 
   
