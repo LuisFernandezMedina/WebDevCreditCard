@@ -1,10 +1,13 @@
 class PaymentCardsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy, :transfer]
 
+  # GET /users/:user_id/payment_cards
   def index
-    payment_cards = PaymentCard.all
-    render json: payment_cards
-  end
+    user = User.find_by(id: params[:user_id])
+    return render(json: { error: "User not found" }, status: :not_found) unless user
+
+    render json: user.payment_cards
+  end 
 
   def show
     payment_card = PaymentCard.find_by(id: params[:id])
@@ -15,16 +18,18 @@ class PaymentCardsController < ApplicationController
     end
   end
 
+  # POST /users/:user_id/payment_cards
   def create
-    Rails.logger.debug "Params recibidos: #{params.inspect}"
-    payment_card = PaymentCard.new(payment_card_params)
+    user = User.find_by(id: params[:user_id])
+    return render(json: { error: "User not found" }, status: :not_found) unless user
 
-    if payment_card.save
-      render json: payment_card, status: :created
+    card = user.payment_cards.new(payment_card_params)
+    if card.save
+      render json: card, status: :created
     else
-      render json: { errors: payment_card.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: card.errors.full_messages }, status: :unprocessable_entity
     end
-  end
+  end 
 
   def update
     payment_card = PaymentCard.find_by(id: params[:id])
@@ -44,6 +49,7 @@ class PaymentCardsController < ApplicationController
     end
   end
 
+  # POST /payment_cards/transfer
   def transfer
     Rails.logger.debug "Transfer params: #{params.inspect}"
   
@@ -97,10 +103,10 @@ class PaymentCardsController < ApplicationController
     end
   end
   
-  
   private
 
   def payment_card_params
-    params.require(:payment_card).permit(:card_number, :cardholder_name, :cvv, :expiration_date)
+    params.require(:payment_card)
+          .permit(:card_number, :cardholder_name, :cvv, :expiration_date)
   end
 end

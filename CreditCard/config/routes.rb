@@ -1,9 +1,12 @@
 Rails.application.routes.draw do
-  
-  resources :payment_cards, only: [:index, :show, :create, :update, :destroy]
+  resources :users, only: [] do
+    resources :payment_cards, only: [:index, :create]
+  end
+
+  resources :payment_cards, only: [:show, :update, :destroy]
 
   post '/payment_cards/transfer', to: 'payment_cards#transfer'
 
-  get "up" => "rails/health#show", as: :rails_health_check
-
+  get 'up', to: 'rails/health#show', as: :rails_health_check
 end
+

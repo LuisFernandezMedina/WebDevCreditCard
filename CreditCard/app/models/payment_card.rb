@@ -1,4 +1,6 @@
 class PaymentCard < ApplicationRecord
+    belongs_to :user
+
     attr_readonly :card_number
 
     validates :card_number, presence: true, length: { is: 16 }, uniqueness: { case_sensitive: false }
@@ -10,8 +12,6 @@ class PaymentCard < ApplicationRecord
     def charge(amount)
         raise "Fondos insuficientes" if amount > balance
         self.balance = balance - amount
-        save!(validate: false) # ⚠️ Omitimos validaciones que ya sabemos que no han cambiado
+        save!(validate: false)
       end
-      
-    
 end

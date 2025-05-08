@@ -10,9 +10,38 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_27_124027) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_08_201505) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "group_request_participants", force: :cascade do |t|
+    t.bigint "group_request_id", null: false
+    t.bigint "participant_id", null: false
+    t.decimal "amount", null: false
+    t.boolean "paid", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_request_id"], name: "index_group_request_participants_on_group_request_id"
+    t.index ["participant_id"], name: "index_group_request_participants_on_participant_id"
+  end
+
+  create_table "group_requests", force: :cascade do |t|
+    t.bigint "creator_id", null: false
+    t.float "total_amount"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_group_requests_on_creator_id"
+  end
+
+  create_table "password_reset_tokens", force: :cascade do |t|
+    t.string "token"
+    t.datetime "expires_at"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_password_reset_tokens_on_user_id"
+  end
 
   create_table "payment_cards", force: :cascade do |t|
     t.string "card_number"
@@ -22,6 +51,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_27_124027) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "balance", precision: 12, scale: 2, default: "10000.0"
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_payment_cards_on_user_id"
+  end
+
+  create_table "requests", force: :cascade do |t|
+    t.integer "requester_id"
+    t.integer "recipient_id"
+    t.decimal "amount"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "transactions", force: :cascade do |t|
@@ -40,8 +79,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_27_124027) do
     t.decimal "balance", default: "0.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "friend_ids", default: [], array: true
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "group_request_participants", "group_requests"
+  add_foreign_key "group_request_participants", "users", column: "participant_id"
+  add_foreign_key "group_requests", "users", column: "creator_id"
+  add_foreign_key "password_reset_tokens", "users"
+  add_foreign_key "payment_cards", "users"
   add_foreign_key "transactions", "users"
 end
