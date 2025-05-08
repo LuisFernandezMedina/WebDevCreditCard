@@ -5,12 +5,5 @@ class PaymentCard < ApplicationRecord
     validates :cardholder_name, presence: true
     validates :cvv, presence: true, length: { is: 3 }
     validates :expiration_date, presence: true
-
-    def charge(amount)
-        raise "Fondos insuficientes" if amount > balance
-        self.balance = balance - amount
-        save!(validate: false) # ⚠️ Omitimos validaciones que ya sabemos que no han cambiado
-      end
-      
-    
+        
 end
