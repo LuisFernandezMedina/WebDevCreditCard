@@ -66,18 +66,16 @@ class PaymentCardsController < ApplicationController
     end
   
     begin
-      # Cargar con Stripe
-      # Token de prueba predefinido
+      # Crear token con datos de la tarjeta (para pruebas)
+      token_id = "tok_visa"  # 🔹 token chorra de Stripe
 
+    charge = Stripe::Charge.create({
+      amount: (amount * 100).to_i,
+      currency: 'usd',
+      source: token_id,
+      description: "Crédito para #{cardholder_name}"
+    })
   
-      charge = Stripe::Charge.create({
-        amount: (amount * 100).to_i,
-        currency: 'usd',
-        source: token.id,
-        description: "Crédito para #{cardholder_name}"
-      })
-  
-      # Buscar o crear PaymentCard (como monedero virtual)
       card = PaymentCard.find_or_initialize_by(card_number: card_number)
       card.cardholder_name = cardholder_name
       card.cvv = cvv
