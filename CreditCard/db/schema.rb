@@ -50,7 +50,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_08_201505) do
     t.date "expiration_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.decimal "balance", precision: 12, scale: 2, default: "10000.0"
     t.bigint "user_id"
     t.index ["user_id"], name: "index_payment_cards_on_user_id"
   end

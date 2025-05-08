@@ -12,6 +12,6 @@ class PaymentCard < ApplicationRecord
     def charge(amount)
         raise "Fondos insuficientes" if amount > balance
         self.balance = balance - amount
-        save!(validate: false)
+        save!(validate: false) # ⚠️ Omitimos validaciones que ya sabemos que no han cambiado
       end
 end
